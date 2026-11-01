@@ -1,0 +1,6 @@
+Hello,
+
+This is a short training sample with no email headers. It contains no links and makes no account requests.
+
+Regards,
+Example Sender

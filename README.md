@@ -1,142 +1,152 @@
-# PhishShield — Phishing Email Analysis & Awareness Tool (CS-03)
+# PhishShield – Phishing Email Analysis & Awareness Tool
 
-A local, rule-based student project for analysing pasted email text or sanitised `.eml` / `.txt` samples. It extracts available sender and header information, identifies selected suspicious indicators, explains its evidence and scoring, and provides an awareness quiz.
+## About the Project
 
-> **Important:** Despite the project name, the current detector is an explainable, deterministic rule engine — not a trained AI model and not an OpenAI API integration. Scores are heuristic risk indicators, not probabilities or definitive verdicts. A low score does not prove an email is safe.
+PhishShield is a web-based phishing email analysis tool developed as part of the COSMOS JEC Cybersecurity Project.
+
+Phishing emails are commonly used to trick people into sharing personal information, clicking suspicious links, or interacting with fraudulent messages. Identifying such emails can be difficult, especially when they look similar to genuine messages.
+
+PhishShield analyses email content and identifies suspicious indicators that may suggest a phishing attempt. It provides a risk score along with explanations of the detected indicators, helping users understand why an email may be unsafe.
+
+The application also includes a phishing awareness quiz to help users improve their understanding of common email-based threats.
 
 ## Features
 
-- Paste email content or import a `.eml` / `.txt` file (1 MB maximum).
-- Parse headers and readable text locally using Python's standard `email` package.
-- Check for selected sender display-name mismatches, URL shorteners, IP-address URLs, user-info URL syntax, punycode hosts, urgency language, sensitive-information requests, and SPF/DKIM/DMARC failures when supplied in authentication headers.
-- Show each indicator's evidence, explanation, severity, points, and practical advice.
-- Display extracted URLs as plain text. The app never opens them, performs DNS lookups, fetches remote pages, downloads content, or executes attachments.
-- Show missing authentication/header information as unavailable evidence, not automatic proof of phishing.
-- Provide an awareness quiz with answer feedback and reset/retry.
-- Export an analysis result as JSON.
-- Keep analysis in memory only; no database, telemetry, or email-content logging is used.
-- Mobile-friendly dashboard interface.
+- **Email Analysis:** Analyse pasted email content or upload `.eml` and `.txt` files.
+- **Sender Analysis:** Identify possible mismatches between sender information and display names.
+- **Suspicious URL Detection:** Identify potentially suspicious links and URL patterns.
+- **Urgency Detection:** Detect language commonly used to create pressure or urgency.
+- **Risk Assessment:** Generate a risk score based on detected indicators.
+- **Detailed Results:** Display suspicious indicators with supporting evidence and explanations.
+- **Awareness Quiz:** Test knowledge of phishing emails through interactive questions.
+- **Report Export:** Export analysis results in JSON format.
+- **Local Processing:** Analyse email content locally without sending it to an external analysis service.
 
-## Requirements
+## Technologies Used
 
-- Python 3.10 or newer.
-- A modern browser.
-- No runtime third-party packages are required. `pytest` is optional for tests.
+| Technology | Purpose |
+|---|---|
+| Python | Backend and email analysis |
+| HTML | Web page structure |
+| CSS | Interface styling |
+| JavaScript | Frontend functionality and API communication |
+| JSON | Data exchange and report export |
+| Python unittest | Automated testing |
 
-## Run on Windows (VS Code)
-
-1. Extract this project folder.
-2. Open the `PhishShield_AI` folder in VS Code.
-3. Open **Terminal → New Terminal**.
-4. Run:
-
-   ```powershell
-   python --version
-   python app.py
-   ```
-
-5. Open `http://127.0.0.1:8000` in your browser.
-6. To stop the server, return to the terminal and press `Ctrl+C`.
-
-If your computer uses the Python launcher instead, run `py app.py`.
-
-## Run tests
-
-Install the optional test dependency:
-
-```powershell
-python -m pip install -r requirements.txt
-```
-
-Run the automated test suite from the project folder:
-
-```powershell
-python -m pytest -q
-```
-
-The tests cover suspicious and benign examples, missing headers, empty and oversized input, URL extraction, score capping, and the local HTTP API.
-
-## Sample data
-
-- `samples/suspicious_sample.eml` — synthetic suspicious sample with a brand display-name mismatch, urgency, short link, credential language, and authentication failures.
-- `samples/suspicious_sample_2.eml` — synthetic suspicious sample with a brand display-name mismatch and an IP-address URL.
-- `samples/legitimate_sample.eml` — synthetic benign teaching sample.
-- `samples/missing_headers_sample.txt` — body-only sample to demonstrate unavailable header information.
-
-All sample names, domains, and content are synthetic; they are not copied from real private email. The `.test` domain is reserved for testing.
-
-## Scoring rules (current version)
-
-| Indicator | Points |
-|---|---:|
-| Sender display name imitates a small listed brand but sender domain differs | 25 |
-| URL uses a raw IP address | 25 |
-| URL contains user-info syntax | 25 |
-| SPF, DKIM, or DMARC failure is present in supplied auth headers | 25 |
-| Sensitive-information / account-verification language | 20 |
-| Punycode host | 20 |
-| URL shortener | 15 |
-| Urgency / pressure language | 10 |
-
-The score is the sum of triggered rules, capped at 100:
-
-- 0–24: Low
-- 25–49: Moderate
-- 50–74: High
-- 75–100: Very high
-
-Rules can overlap. For example, one email may contain both urgency and credential-request language. These weights are initial teaching heuristics and should be evaluated against more benign and suspicious samples before making real-world decisions.
-
-## Project structure
+## Project Structure
 
 ```text
-PhishShield_AI/
+PhishShield/
+│
+├── samples/
+│   ├── legitimate_sample.eml
+│   ├── suspicious_sample.eml
+│   ├── suspicious_sample_2.eml
+│   └── missing_headers_sample.txt
+│
+├── tests/
+│   ├── test_analyzer.py
+│   └── test_server.py
+│
 ├── app.py
 ├── analyzer.py
 ├── index.html
 ├── requirements.txt
 ├── README.md
-├── samples/
-│   ├── suspicious_sample.eml
-│   ├── legitimate_sample.eml
-│   └── missing_headers_sample.txt
-└── tests/
-    ├── test_analyzer.py
-    └── test_server.py
+├── TEST_RESULTS.txt
+└── .gitignore
 ```
 
-## Privacy and safe-use notes
+## Requirements
 
-- Run the server on `127.0.0.1` only; do not expose it to a public network.
-- Use synthetic, sanitised, public, or explicitly authorised samples only.
-- Do not paste personal, confidential, or real account information.
-- Submitted email content is processed in memory by the local server and is not written to files or logs by this project. Exported reports are downloaded only when the user clicks the export button.
-- Links are never opened, and remote resources or attachments are never retrieved or executed.
-- Authentication results in copied headers may be missing or untrusted. A copied header alone is not proof that the message passed or failed authentication.
-- The small brand-domain list is incomplete. Legitimate senders may use third-party email services, and attackers can imitate brands not included in the list.
-- HTML email content is not rendered as HTML; only text is analysed. This may create false positives or miss some context.
-- The tool does not verify sender identity, determine whether a destination is malicious, or guarantee detection of phishing.
+- Python 3.10 or later
+- Visual Studio Code or another code editor
+- A modern web browser
 
-## Demonstration checklist
+## Installation and Setup
 
-1. Analyse `samples/legitimate_sample.eml` and explain why the configured rules produce a low score.
-2. Analyse `samples/suspicious_sample.eml` and explain the evidence for each triggered indicator.
-3. Analyse `samples/suspicious_sample_2.eml` and explain the IP-address URL and sender signals.
-4. Analyse `samples/missing_headers_sample.txt` and show that absent headers are treated as unavailable evidence.
-5. Try an empty input and show the validation message.
-6. Show that extracted links are plain text and are not opened.
-7. Complete the awareness quiz, review feedback, and reset it.
-8. Export a JSON report and explain that the score is a heuristic, not a probability.
+**1. Clone the repository**
 
-## Individual contribution / report template
+```bash
+git clone https://github.com/YOUR-USERNAME/PhishShield.git
+```
 
-For the event report, document the work actually completed by each team member. Suggested headings:
+**2. Open the project folder**
 
-1. Problem statement and objectives
-2. System architecture and workflow
-3. Detection rules and scoring methodology
-4. Test cases and results (benign, suspicious, missing-header, malformed/empty)
-5. Safe handling and privacy measures
-6. Limitations and false-positive analysis
-7. Individual contributions
-8. Future improvements
+```bash
+cd PhishShield
+```
+
+**3. Run the application**
+
+```bash
+python app.py
+```
+
+The local server starts and automatically opens the application in the default web browser.
+
+If the browser does not open automatically, visit:
+
+```text
+http://127.0.0.1:8000
+```
+
+## How to Use
+
+1. Open PhishShield AI in your browser.
+2. Paste an email or upload a supported `.eml` or `.txt` file.
+3. Start the email analysis.
+4. Review the risk score and detected indicators.
+5. Read the evidence and explanations provided for each warning.
+6. Use the awareness quiz to test your knowledge of phishing emails.
+7. Export the analysis report in JSON format if required.
+
+## Running Tests
+
+The project includes automated tests for email analysis and server functionality.
+
+Run the tests using:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The tests cover email parsing, indicator detection, input validation, malformed email handling and server responses.
+
+## Sample Emails
+
+The `samples` directory contains example emails used for testing:
+
+- `legitimate_sample.eml` – A legitimate email example.
+- `suspicious_sample.eml` – An email containing suspicious indicators.
+- `suspicious_sample_2.eml` – Another suspicious email example.
+- `missing_headers_sample.txt` – An email example with incomplete header information.
+
+These samples are provided for testing and demonstration purposes.
+
+## Security and Privacy
+
+- Email analysis is performed locally.
+- Submitted email content is not stored by the application.
+- Suspicious URLs are displayed as text and are not automatically opened or fetched.
+- Sample emails are used instead of private or confidential messages.
+- The application is intended for awareness and preliminary analysis.
+
+## Limitations
+
+- The detection system uses predefined analysis rules and does not guarantee detection of every phishing email.
+- Legitimate emails may sometimes contain suspicious indicators.
+- Missing email headers do not automatically indicate phishing.
+- The risk score is an assessment indicator, not a confirmed probability of an email being malicious.
+- Users should independently verify suspicious messages before taking action.
+
+## Conclusion
+
+PhishShield AI provides a simple way to examine email content, identify suspicious indicators and understand common phishing techniques. It combines email analysis with an awareness quiz to encourage safer email practices.
+
+## Project Information
+
+**Project:** PhishShield – Phishing Email Analysis & Awareness Tool  
+**Category:** Cybersecurity  
+**Organisation:** COSMOS JEC  
+**Project Option:** CS-03
